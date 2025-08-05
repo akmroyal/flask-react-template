@@ -3,17 +3,18 @@ import unittest
 from typing import Tuple
 
 from server import app
+
 from modules.account.account_service import AccountService
 from modules.account.internal.store.account_repository import AccountRepository
-from modules.account.types import CreateAccountByUsernameAndPasswordParams, Account
+from modules.account.types import Account, CreateAccountByUsernameAndPasswordParams
+from modules.comment.comment_service import CommentService
+from modules.comment.internal.store.comment_repository import CommentRepository
+from modules.comment.rest_api.comment_rest_api_server import CommentRestApiServer
+from modules.comment.types import Comment, CreateCommentParams
 from modules.logger.logger_manager import LoggerManager
 from modules.task.internal.store.task_repository import TaskRepository
 from modules.task.task_service import TaskService
 from modules.task.types import CreateTaskParams, Task
-from modules.comment.internal.store.comment_repository import CommentRepository
-from modules.comment.rest_api.comment_rest_api_server import CommentRestApiServer
-from modules.comment.comment_service import CommentService
-from modules.comment.types import CreateCommentParams, Comment
 
 
 class BaseTestComment(unittest.TestCase):
@@ -94,27 +95,28 @@ class BaseTestComment(unittest.TestCase):
     def create_test_comment(self, account_id: str, task_id: str, content: str = None) -> Comment:
         return CommentService.create_comment(
             params=CreateCommentParams(
-                account_id=account_id,
-                task_id=task_id,
-                content=content or self.DEFAULT_COMMENT_CONTENT,
+                account_id=account_id, task_id=task_id, content=content or self.DEFAULT_COMMENT_CONTENT
             )
         )
 
     def create_multiple_test_comments(self, account_id: str, task_id: str, count: int) -> list[Comment]:
         comments = []
         for i in range(count):
-            comment = self.create_test_comment(
-                account_id=account_id, 
-                task_id=task_id, 
-                content=f"Comment {i+1}"
-            )
+            comment = self.create_test_comment(account_id=account_id, task_id=task_id, content=f"Comment {i+1}")
             comments.append(comment)
         return comments
 
     # HTTP REQUEST HELPER METHODS
 
     def make_authenticated_request(
-        self, method: str, account_id: str, task_id: str, token: str, comment_id: str = None, data: dict = None, query_params: str = ""
+        self,
+        method: str,
+        account_id: str,
+        task_id: str,
+        token: str,
+        comment_id: str = None,
+        data: dict = None,
+        query_params: str = "",
     ):
         if comment_id:
             url = self.get_comment_by_id_api_url(account_id, task_id, comment_id)
@@ -136,7 +138,9 @@ class BaseTestComment(unittest.TestCase):
             elif method.upper() == "DELETE":
                 return client.delete(url, headers={"Authorization": f"Bearer {token}"})
 
-    def make_unauthenticated_request(self, method: str, account_id: str, task_id: str, comment_id: str = None, data: dict = None):
+    def make_unauthenticated_request(
+        self, method: str, account_id: str, task_id: str, comment_id: str = None, data: dict = None
+    ):
         if comment_id:
             url = self.get_comment_by_id_api_url(account_id, task_id, comment_id)
         else:
@@ -153,7 +157,13 @@ class BaseTestComment(unittest.TestCase):
                 return client.delete(url)
 
     def make_cross_account_request(
-        self, method: str, target_account_id: str, task_id: str, auth_token: str, comment_id: str = None, data: dict = None
+        self,
+        method: str,
+        target_account_id: str,
+        task_id: str,
+        auth_token: str,
+        comment_id: str = None,
+        data: dict = None,
     ):
         if comment_id:
             url = self.get_comment_by_id_api_url(target_account_id, task_id, comment_id)
@@ -175,7 +185,13 @@ class BaseTestComment(unittest.TestCase):
     # ASSERTION HELPER METHODS
 
     def assert_comment_response(
-        self, response_data: dict, expected_comment: Comment = None, task_id: str = None, account_id: str = None, content: str = None, id: str = None
+        self,
+        response_data: dict,
+        expected_comment: Comment = None,
+        task_id: str = None,
+        account_id: str = None,
+        content: str = None,
+        id: str = None,
     ) -> None:
         if expected_comment:
             assert response_data.get("id") == expected_comment.id
@@ -198,7 +214,12 @@ class BaseTestComment(unittest.TestCase):
         assert "content" in response_data
 
     def assert_pagination_response(
-        self, response_data: dict, expected_items_count: int, expected_total_count: int, expected_page: int = 1, expected_size: int = 30
+        self,
+        response_data: dict,
+        expected_items_count: int,
+        expected_total_count: int,
+        expected_page: int = 1,
+        expected_size: int = 30,
     ) -> None:
         assert "items" in response_data
         assert "pagination_params" in response_data

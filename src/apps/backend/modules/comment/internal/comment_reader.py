@@ -3,9 +3,9 @@ from bson.objectid import ObjectId
 from modules.application.common.base_model import BaseModel
 from modules.application.common.types import PaginationResult
 from modules.comment.errors import CommentNotFoundError
-from modules.comment.internal.store.comment_repository import CommentRepository
 from modules.comment.internal.comment_util import CommentUtil
-from modules.comment.types import GetPaginatedCommentsParams, GetCommentParams, Comment
+from modules.comment.internal.store.comment_repository import CommentRepository
+from modules.comment.types import Comment, GetCommentParams, GetPaginatedCommentsParams
 
 
 class CommentReader:
@@ -13,10 +13,10 @@ class CommentReader:
     def get_comment(*, params: GetCommentParams) -> Comment:
         comment_bson = CommentRepository.collection().find_one(
             {
-                "_id": ObjectId(params.comment_id), 
+                "_id": ObjectId(params.comment_id),
                 "task_id": params.task_id,
-                "account_id": params.account_id, 
-                "active": True
+                "account_id": params.account_id,
+                "active": True,
             }
         )
         if comment_bson is None:
@@ -25,11 +25,7 @@ class CommentReader:
 
     @staticmethod
     def get_paginated_comments(*, params: GetPaginatedCommentsParams) -> PaginationResult[Comment]:
-        filter_query = {
-            "task_id": params.task_id,
-            "account_id": params.account_id, 
-            "active": True
-        }
+        filter_query = {"task_id": params.task_id, "account_id": params.account_id, "active": True}
         total_count = CommentRepository.collection().count_documents(filter_query)
         pagination_params, skip, total_pages = BaseModel.calculate_pagination_values(
             params.pagination_params, total_count

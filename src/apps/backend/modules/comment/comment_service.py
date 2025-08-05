@@ -2,12 +2,12 @@ from modules.application.common.types import PaginationResult
 from modules.comment.internal.comment_reader import CommentReader
 from modules.comment.internal.comment_writer import CommentWriter
 from modules.comment.types import (
-    CreateCommentParams,
-    DeleteCommentParams,
-    GetPaginatedCommentsParams,
-    GetCommentParams,
     Comment,
     CommentDeletionResult,
+    CreateCommentParams,
+    DeleteCommentParams,
+    GetCommentParams,
+    GetPaginatedCommentsParams,
     UpdateCommentParams,
 )
 

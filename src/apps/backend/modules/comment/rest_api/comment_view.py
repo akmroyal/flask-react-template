@@ -8,13 +8,13 @@ from flask.views import MethodView
 from modules.application.common.constants import DEFAULT_PAGINATION_PARAMS
 from modules.application.common.types import PaginationParams
 from modules.authentication.rest_api.access_auth_middleware import access_auth_middleware
-from modules.comment.errors import CommentBadRequestError
 from modules.comment.comment_service import CommentService
+from modules.comment.errors import CommentBadRequestError
 from modules.comment.types import (
     CreateCommentParams,
     DeleteCommentParams,
-    GetPaginatedCommentsParams,
     GetCommentParams,
+    GetPaginatedCommentsParams,
     UpdateCommentParams,
 )
 
@@ -31,9 +31,7 @@ class CommentView(MethodView):
             raise CommentBadRequestError("Content is required")
 
         create_comment_params = CreateCommentParams(
-            account_id=account_id, 
-            task_id=task_id, 
-            content=request_data["content"]
+            account_id=account_id, task_id=task_id, content=request_data["content"]
         )
 
         created_comment = CommentService.create_comment(params=create_comment_params)
@@ -44,11 +42,7 @@ class CommentView(MethodView):
     @access_auth_middleware
     def get(self, account_id: str, task_id: str, comment_id: Optional[str] = None) -> ResponseReturnValue:
         if comment_id:
-            comment_params = GetCommentParams(
-                account_id=account_id, 
-                task_id=task_id, 
-                comment_id=comment_id
-            )
+            comment_params = GetCommentParams(account_id=account_id, task_id=task_id, comment_id=comment_id)
             comment = CommentService.get_comment(params=comment_params)
             comment_dict = asdict(comment)
             return jsonify(comment_dict), 200
@@ -69,9 +63,7 @@ class CommentView(MethodView):
 
             pagination_params = PaginationParams(page=page, size=size, offset=0)
             comments_params = GetPaginatedCommentsParams(
-                account_id=account_id, 
-                task_id=task_id, 
-                pagination_params=pagination_params
+                account_id=account_id, task_id=task_id, pagination_params=pagination_params
             )
 
             pagination_result = CommentService.get_paginated_comments(params=comments_params)
@@ -91,10 +83,7 @@ class CommentView(MethodView):
             raise CommentBadRequestError("Content is required")
 
         update_comment_params = UpdateCommentParams(
-            account_id=account_id, 
-            task_id=task_id, 
-            comment_id=comment_id, 
-            content=request_data["content"]
+            account_id=account_id, task_id=task_id, comment_id=comment_id, content=request_data["content"]
         )
 
         updated_comment = CommentService.update_comment(params=update_comment_params)
@@ -104,11 +93,7 @@ class CommentView(MethodView):
 
     @access_auth_middleware
     def delete(self, account_id: str, task_id: str, comment_id: str) -> ResponseReturnValue:
-        delete_params = DeleteCommentParams(
-            account_id=account_id, 
-            task_id=task_id, 
-            comment_id=comment_id
-        )
+        delete_params = DeleteCommentParams(account_id=account_id, task_id=task_id, comment_id=comment_id)
 
         CommentService.delete_comment(params=delete_params)
 

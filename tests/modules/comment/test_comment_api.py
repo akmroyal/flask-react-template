@@ -17,10 +17,7 @@ class TestCommentApi(BaseTestComment):
         assert response.status_code == 201
         assert response.json is not None
         self.assert_comment_response(
-            response.json,
-            content=self.DEFAULT_COMMENT_CONTENT,
-            task_id=task.id,
-            account_id=account.id,
+            response.json, content=self.DEFAULT_COMMENT_CONTENT, task_id=task.id, account_id=account.id
         )
 
     def test_create_comment_missing_content(self) -> None:
@@ -128,7 +125,9 @@ class TestCommentApi(BaseTestComment):
         task = self.create_test_task(account_id=account.id)
         non_existent_comment_id = "507f1f77bcf86cd799439011"
 
-        response = self.make_authenticated_request("GET", account.id, task.id, token, comment_id=non_existent_comment_id)
+        response = self.make_authenticated_request(
+            "GET", account.id, task.id, token, comment_id=non_existent_comment_id
+        )
 
         self.assert_error_response(response, 404, CommentErrorCode.NOT_FOUND)
 
@@ -144,9 +143,7 @@ class TestCommentApi(BaseTestComment):
     def test_update_comment_success(self) -> None:
         account, token = self.create_account_and_get_token()
         task = self.create_test_task(account_id=account.id)
-        created_comment = self.create_test_comment(
-            account_id=account.id, task_id=task.id, content="Original Comment"
-        )
+        created_comment = self.create_test_comment(account_id=account.id, task_id=task.id, content="Original Comment")
         update_data = {"content": "Updated Comment"}
 
         response = self.make_authenticated_request(
@@ -155,11 +152,7 @@ class TestCommentApi(BaseTestComment):
 
         assert response.status_code == 200
         self.assert_comment_response(
-            response.json,
-            id=created_comment.id,
-            task_id=task.id,
-            account_id=account.id,
-            content="Updated Comment",
+            response.json, id=created_comment.id, task_id=task.id, account_id=account.id, content="Updated Comment"
         )
 
     def test_update_comment_missing_content(self) -> None:
@@ -193,18 +186,20 @@ class TestCommentApi(BaseTestComment):
         fake_comment_id = "507f1f77bcf86cd799439011"
         update_data = {"content": "Updated Comment"}
 
-        response = self.make_unauthenticated_request("PATCH", account.id, task.id, comment_id=fake_comment_id, data=update_data)
+        response = self.make_unauthenticated_request(
+            "PATCH", account.id, task.id, comment_id=fake_comment_id, data=update_data
+        )
 
         self.assert_error_response(response, 401, AccessTokenErrorCode.AUTHORIZATION_HEADER_NOT_FOUND)
 
     def test_delete_comment_success(self) -> None:
         account, token = self.create_account_and_get_token()
         task = self.create_test_task(account_id=account.id)
-        created_comment = self.create_test_comment(
-            account_id=account.id, task_id=task.id, content="Comment to Delete"
-        )
+        created_comment = self.create_test_comment(account_id=account.id, task_id=task.id, content="Comment to Delete")
 
-        delete_response = self.make_authenticated_request("DELETE", account.id, task.id, token, comment_id=created_comment.id)
+        delete_response = self.make_authenticated_request(
+            "DELETE", account.id, task.id, token, comment_id=created_comment.id
+        )
 
         assert delete_response.status_code == 204
         assert delete_response.data == b""
@@ -217,7 +212,9 @@ class TestCommentApi(BaseTestComment):
         task = self.create_test_task(account_id=account.id)
         non_existent_comment_id = "507f1f77bcf86cd799439011"
 
-        response = self.make_authenticated_request("DELETE", account.id, task.id, token, comment_id=non_existent_comment_id)
+        response = self.make_authenticated_request(
+            "DELETE", account.id, task.id, token, comment_id=non_existent_comment_id
+        )
 
         self.assert_error_response(response, 404, CommentErrorCode.NOT_FOUND)
 
@@ -234,7 +231,7 @@ class TestCommentApi(BaseTestComment):
         account, token = self.create_account_and_get_token()
         task1 = self.create_test_task(account_id=account.id, title="Task 1")
         task2 = self.create_test_task(account_id=account.id, title="Task 2")
-        
+
         comment1 = self.create_test_comment(account_id=account.id, task_id=task1.id, content="Comment for Task 1")
         comment2 = self.create_test_comment(account_id=account.id, task_id=task2.id, content="Comment for Task 2")
 
@@ -259,17 +256,23 @@ class TestCommentApi(BaseTestComment):
         create_response = self.make_authenticated_request("POST", account1.id, task1.id, token1, data=comment_data)
         account1_comment_id = create_response.json.get("id")
 
-        get_response = self.make_cross_account_request("GET", account1.id, task1.id, token2, comment_id=account1_comment_id)
+        get_response = self.make_cross_account_request(
+            "GET", account1.id, task1.id, token2, comment_id=account1_comment_id
+        )
         patch_response = self.make_cross_account_request(
             "PATCH", account1.id, task1.id, token2, comment_id=account1_comment_id, data={"content": "Hacked"}
         )
-        delete_response = self.make_cross_account_request("DELETE", account1.id, task1.id, token2, comment_id=account1_comment_id)
+        delete_response = self.make_cross_account_request(
+            "DELETE", account1.id, task1.id, token2, comment_id=account1_comment_id
+        )
 
         self.assert_error_response(get_response, 401, AccessTokenErrorCode.UNAUTHORIZED_ACCESS)
         self.assert_error_response(patch_response, 401, AccessTokenErrorCode.UNAUTHORIZED_ACCESS)
         self.assert_error_response(delete_response, 401, AccessTokenErrorCode.UNAUTHORIZED_ACCESS)
 
-        verify_response = self.make_authenticated_request("GET", account1.id, task1.id, token1, comment_id=account1_comment_id)
+        verify_response = self.make_authenticated_request(
+            "GET", account1.id, task1.id, token1, comment_id=account1_comment_id
+        )
         assert verify_response.status_code == 200
         assert verify_response.json.get("id") == account1_comment_id
 

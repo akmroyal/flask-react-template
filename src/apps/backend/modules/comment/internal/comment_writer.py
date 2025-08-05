@@ -4,16 +4,16 @@ from bson.objectid import ObjectId
 from pymongo import ReturnDocument
 
 from modules.comment.errors import CommentNotFoundError
-from modules.comment.internal.store.comment_model import CommentModel
-from modules.comment.internal.store.comment_repository import CommentRepository
 from modules.comment.internal.comment_reader import CommentReader
 from modules.comment.internal.comment_util import CommentUtil
+from modules.comment.internal.store.comment_model import CommentModel
+from modules.comment.internal.store.comment_repository import CommentRepository
 from modules.comment.types import (
+    Comment,
+    CommentDeletionResult,
     CreateCommentParams,
     DeleteCommentParams,
     GetCommentParams,
-    Comment,
-    CommentDeletionResult,
     UpdateCommentParams,
 )
 
@@ -22,9 +22,7 @@ class CommentWriter:
     @staticmethod
     def create_comment(*, params: CreateCommentParams) -> Comment:
         comment_bson = CommentModel(
-            task_id=params.task_id,
-            account_id=params.account_id, 
-            content=params.content
+            task_id=params.task_id, account_id=params.account_id, content=params.content
         ).to_bson()
 
         query = CommentRepository.collection().insert_one(comment_bson)
@@ -36,10 +34,10 @@ class CommentWriter:
     def update_comment(*, params: UpdateCommentParams) -> Comment:
         updated_comment_bson = CommentRepository.collection().find_one_and_update(
             {
-                "_id": ObjectId(params.comment_id), 
+                "_id": ObjectId(params.comment_id),
                 "task_id": params.task_id,
-                "account_id": params.account_id, 
-                "active": True
+                "account_id": params.account_id,
+                "active": True,
             },
             {"$set": {"content": params.content, "updated_at": datetime.now()}},
             return_document=ReturnDocument.AFTER,
@@ -52,11 +50,9 @@ class CommentWriter:
 
     @staticmethod
     def delete_comment(*, params: DeleteCommentParams) -> CommentDeletionResult:
-        comment = CommentReader.get_comment(params=GetCommentParams(
-            account_id=params.account_id, 
-            task_id=params.task_id,
-            comment_id=params.comment_id
-        ))
+        comment = CommentReader.get_comment(
+            params=GetCommentParams(account_id=params.account_id, task_id=params.task_id, comment_id=params.comment_id)
+        )
 
         deletion_time = datetime.now()
         updated_comment_bson = CommentRepository.collection().find_one_and_update(

@@ -28,15 +28,14 @@ class CommentRepository(ApplicationRepository):
     def on_init_collection(cls, collection: Collection) -> bool:
         # Index for efficient querying by task and account
         collection.create_index(
-            [("active", 1), ("task_id", 1), ("account_id", 1)], 
-            name="active_task_account_index", 
-            partialFilterExpression={"active": True}
+            [("active", 1), ("task_id", 1), ("account_id", 1)],
+            name="active_task_account_index",
+            partialFilterExpression={"active": True},
         )
 
         # Index for efficient querying by account and task
         collection.create_index(
-            [("account_id", 1), ("task_id", 1), ("created_at", -1)], 
-            name="account_task_created_index"
+            [("account_id", 1), ("task_id", 1), ("created_at", -1)], name="account_task_created_index"
         )
 
         add_validation_command = {
